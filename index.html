@@ -1,0 +1,2062 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>魔法世界伴侣匹配测试</title>
+<style>
+:root {
+  --purple:#8b65d8;
+  --deep:#5a3fa3;
+  --pink:#f6a7cd;
+  --gold:#d9a64a;
+  --ink:#2c2440;
+  --muted:#776b8e;
+  --paper:#fffaf8;
+  --line:#eadcf8;
+  --bg1:#fff7ff;
+  --bg2:#eef7ff;
+  --green:#82c98a;
+}
+* { box-sizing:border-box; }
+html,body { margin:0; min-height:100%; font-family: "Noto Serif SC", "Songti SC", "Microsoft YaHei", serif; color:var(--ink); background:linear-gradient(135deg,var(--bg2),var(--bg1) 45%,#fff7e8); }
+body::before {
+  content:""; position:fixed; inset:0; pointer-events:none; opacity:.45;
+  background:
+    radial-gradient(circle at 12% 15%, rgba(255,220,116,.55) 0 2px, transparent 3px),
+    radial-gradient(circle at 80% 11%, rgba(139,101,216,.28) 0 3px, transparent 4px),
+    radial-gradient(circle at 70% 78%, rgba(246,167,205,.30) 0 4px, transparent 5px);
+  background-size:110px 130px;
+}
+.app { width:100%; max-width:520px; margin:0 auto; min-height:100svh; padding:18px 14px 22px; position:relative; }
+.screen { min-height:calc(100svh - 40px); display:none; animation:fade .35s ease both; }
+.screen.active { display:flex; flex-direction:column; }
+@keyframes fade { from {opacity:0; transform:translateY(8px)} to {opacity:1; transform:none} }
+.card {
+  background:rgba(255,255,255,.82); backdrop-filter: blur(10px);
+  border:1.5px solid var(--line); border-radius:28px;
+  box-shadow:0 12px 40px rgba(125,80,185,.15);
+}
+.hero {
+  flex:1; overflow:hidden; position:relative; padding:28px 22px;
+}
+.hero::before {
+  content:""; position:absolute; inset:0; opacity:.9; z-index:-1;
+  background:
+   radial-gradient(circle at 20% 18%, #fff 0 0, transparent 0),
+   linear-gradient(to bottom, rgba(204,225,255,.85), rgba(255,255,255,.74) 45%, rgba(255,245,251,.9)),
+   url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='390' height='620' viewBox='0 0 390 620'%3E%3Cg opacity='.23' fill='%238b65d8'%3E%3Cpath d='M56 220h34v80H56zM102 170h40v130h-40zM154 200h35v100h-35zM200 150h42v150h-42zM255 210h38v90h-38z'/%3E%3Cpath d='M73 170l18 50H55zM122 115l22 55h-44zM171 155l20 45h-40zM221 95l25 55h-50zM274 165l20 45h-40z'/%3E%3C/g%3E%3C/svg%3E") center bottom/cover no-repeat;
+}
+.kicker { text-align:center; color:var(--deep); font-size:14px; letter-spacing:.05em; margin-top:4px; }
+.title { text-align:center; font-size:56px; line-height:1; margin:18px 0 8px; color:var(--deep); text-shadow:0 2px 0 #fff; letter-spacing:.04em; }
+.subtitle { text-align:center; font-size:24px; color:var(--deep); margin:0 0 24px; }
+.panel { margin-top:auto; padding:22px 18px; background:rgba(255,255,255,.88); border:1px solid var(--line); border-radius:24px; box-shadow:0 12px 30px rgba(90,63,163,.12); }
+.panel h2 { text-align:center; margin:0 0 12px; color:var(--deep); font-size:20px; }
+.intro { text-align:center; color:#62576f; font-size:14px; line-height:1.8; margin:0 0 18px; }
+.nameInput { width:100%; border:1.5px solid #ddc8f5; background:white; border-radius:16px; padding:14px 16px; font-size:16px; color:var(--ink); outline:none; box-shadow: inset 0 1px 0 #fff; }
+.nameInput:focus { border-color:var(--purple); box-shadow:0 0 0 4px rgba(139,101,216,.12); }
+.modeGrid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:18px 0; }
+.modeBtn { border:1.5px solid #e2c9f5; background:linear-gradient(180deg,#fff,#fbf7ff); border-radius:18px; padding:16px 10px; min-height:126px; color:var(--deep); box-shadow:0 8px 18px rgba(139,101,216,.12); font-family:inherit; cursor:pointer; }
+.modeBtn strong { display:block; font-size:22px; color:var(--deep); margin-bottom:5px; }
+.modeBtn span { display:block; font-size:13px; color:#695c80; line-height:1.55; }
+.primaryBtn, .ghostBtn { border:0; border-radius:999px; padding:14px 22px; font-family:inherit; font-size:18px; cursor:pointer; box-shadow:0 10px 24px rgba(139,101,216,.20); }
+.primaryBtn { color:white; background:linear-gradient(135deg,#a77af0,#7d55cf); }
+.ghostBtn { color:var(--deep); background:white; border:1px solid var(--line); }
+.tip { text-align:center; color:#776b8e; font-size:13px; line-height:1.8; margin:12px 0 0; }
+.topbar { height:58px; display:flex; align-items:center; justify-content:space-between; gap:12px; padding:0 6px; color:var(--deep); }
+.iconBtn { width:42px; height:42px; border:0; border-radius:50%; background:white; color:var(--deep); font-size:22px; box-shadow:0 6px 18px rgba(139,101,216,.12); cursor:pointer; }
+.headerTitle { font-size:19px; font-weight:700; text-align:center; flex:1; }
+.progressText { color:var(--deep); font-size:15px; margin:14px 4px 6px; display:flex; justify-content:space-between; }
+.dots { display:flex; gap:5px; margin:8px 4px 18px; align-items:center; }
+.dot { height:7px; flex:1; max-width:20px; border-radius:999px; background:#ded6e8; }
+.dot.done { background:linear-gradient(90deg,#a77af0,#f6a7cd); }
+.questionCard { padding:24px 20px; min-height:166px; display:flex; align-items:center; justify-content:center; text-align:left; font-size:20px; line-height:1.75; position:relative; overflow:hidden; }
+.questionCard::after { content:"⌁"; position:absolute; right:20px; bottom:8px; font-size:58px; color:rgba(139,101,216,.08); }
+.options { display:flex; flex-direction:column; gap:12px; margin:18px 0 16px; }
+.option { display:grid; grid-template-columns:52px 1fr; gap:12px; align-items:center; padding:14px 14px; border:1.5px solid #eadcf8; background:rgba(255,255,255,.88); border-radius:20px; color:var(--ink); font-size:16px; line-height:1.55; text-align:left; box-shadow:0 8px 18px rgba(90,63,163,.08); font-family:inherit; cursor:pointer; transition:.16s ease; }
+.option:active { transform:scale(.985); }
+.badge { width:46px; height:46px; border-radius:50%; display:grid; place-items:center; color:white; font-size:22px; font-weight:700; background:linear-gradient(135deg,#8b65d8,#c5a5ff); box-shadow:inset 0 0 0 2px rgba(255,255,255,.35); }
+.option:nth-child(2) .badge { background:linear-gradient(135deg,#f191bf,#f6c2d9); }
+.option:nth-child(3) .badge { background:linear-gradient(135deg,#6f9ce8,#b7d2ff); }
+.option:nth-child(4) .badge { background:linear-gradient(135deg,#f0ae49,#ffd38a); }
+.bottomNav { display:flex; justify-content:space-between; gap:12px; margin-top:auto; }
+.mini { font-size:14px; padding:11px 16px; }
+.result { padding-bottom:20px; }
+.resultHead { padding:18px; margin-bottom:14px; text-align:center; position:relative; overflow:hidden; }
+.resultName { font-size:29px; color:var(--deep); font-weight:800; margin:8px 0 4px; }
+.resultQuote { color:#6c5a7f; font-size:14px; }
+.portrait { width:128px; height:128px; border-radius:28px; margin:8px auto 10px; display:grid; place-items:center; font-size:54px; background:linear-gradient(135deg,#f6e7ff,#eef7ff); border:2px solid white; box-shadow:0 14px 28px rgba(90,63,163,.16); }
+.section { padding:18px; margin:12px 0; }
+.section h3 { color:var(--deep); margin:0 0 10px; font-size:20px; }
+.section p { margin:0; line-height:1.9; font-size:15px; color:#44364e; white-space:pre-wrap; }
+.traitRow { margin:12px 0; }
+.traitTitle { display:flex; justify-content:space-between; font-size:14px; color:#57496a; margin-bottom:6px; }
+.bar { height:16px; border-radius:999px; background:#eee8f3; overflow:hidden; box-shadow:inset 0 1px 3px rgba(0,0,0,.06); }
+.fill { height:100%; border-radius:999px; background:linear-gradient(90deg,#9d74ef,#f09bc6); color:white; font-size:11px; text-align:right; padding-right:7px; line-height:16px; min-width:28px; }
+.footerActions { display:flex; gap:12px; margin-top:14px; }
+.footerActions button { flex:1; }
+.toast { position:fixed; left:50%; bottom:28px; transform:translateX(-50%); background:#3f315a; color:#fff; padding:10px 16px; border-radius:999px; font-size:14px; opacity:0; transition:.2s; pointer-events:none; }
+.toast.show { opacity:1; }
+@media (max-width:380px) {
+ .title {font-size:48px} .modeBtn strong{font-size:19px} .questionCard{font-size:18px} .option{font-size:15px; grid-template-columns:46px 1fr} .badge{width:42px;height:42px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <section id="startScreen" class="screen active">
+    <div class="hero card">
+      <div class="kicker">你会和谁成为命中注定的伴侣？</div>
+      <h1 class="title">魔法世界</h1>
+      <p class="subtitle">伴侣匹配测试</p>
+      <div class="panel">
+        <h2>欢迎来到魔法世界</h2>
+        <p class="intro">通过一系列精心设计的问题，探索你的内心世界。系统会根据你的魔法人格，匹配最适合你的伴侣。</p>
+        <input class="nameInput" id="nameInput" maxlength="16" placeholder="请输入你的名字" />
+        <div class="modeGrid">
+          <button class="modeBtn" onclick="selectMode('basic')"><strong>36题</strong><span>基础测试<br>适合快速体验<br>约5–8分钟完成</span></button>
+          <button class="modeBtn" onclick="selectMode('full')"><strong>98题</strong><span>完整测试<br>适合深度体验<br>更易触发隐藏线</span></button>
+        </div>
+        <button class="primaryBtn" style="width:100%" onclick="beginSelected()">开始测试 ✦</button>
+        <p class="tip">题目越多，结果越细，也更容易触发隐藏角色和特殊剧情线。</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="questionScreen" class="screen">
+    <div class="topbar">
+      <button class="iconBtn" onclick="backToStart()">‹</button>
+      <div class="headerTitle">魔法世界伴侣测试</div>
+      <button class="iconBtn" onclick="showToast('请跟随直觉选择，不要过度思考。')">?</button>
+    </div>
+    <div class="progressText"><span id="greeting">亲爱的魔法师</span><span id="progressText">1 / 36</span></div>
+    <div class="dots" id="progressDots"></div>
+    <div class="questionCard card" id="questionText"></div>
+    <div class="options">
+      <button class="option" onclick="chooseOption('A')"><span class="badge">A</span><span id="optionA"></span></button>
+      <button class="option" onclick="chooseOption('B')"><span class="badge">B</span><span id="optionB"></span></button>
+      <button class="option" onclick="chooseOption('C')"><span class="badge">C</span><span id="optionC"></span></button>
+      <button class="option" onclick="chooseOption('D')"><span class="badge">D</span><span id="optionD"></span></button>
+    </div>
+    <div class="bottomNav">
+      <button class="ghostBtn mini" onclick="previousQuestion()">上一题</button>
+      <button class="ghostBtn mini" onclick="showToast('选择一个选项后会自动进入下一题。')">下一题 →</button>
+    </div>
+    <p class="tip">选择没有对错，跟随你的内心即可。</p>
+  </section>
+
+  <section id="resultScreen" class="screen result">
+    <div class="resultHead card">
+      <div class="kicker">✦ 测试结果 ✦</div>
+      <div class="portrait" id="portrait">🪄</div>
+      <div>会和你成为伴侣的是</div>
+      <div class="resultName" id="resultName"></div>
+      <div class="resultQuote" id="resultQuote"></div>
+    </div>
+    <div class="section card">
+      <h3>匹配分析</h3>
+      <p id="analysisText"></p>
+    </div>
+    <div class="section card">
+      <h3>你们的小故事</h3>
+      <p id="storyText"></p>
+    </div>
+    <div class="section card">
+      <h3>你的魔法人格倾向</h3>
+      <div id="traitBars"></div>
+    </div>
+    <div class="footerActions">
+      <button class="ghostBtn" onclick="restartTest()">重新测试</button>
+      <button class="primaryBtn" onclick="shareResult()">分享结果</button>
+    </div>
+  </section>
+</div>
+<div id="toast" class="toast"></div>
+
+<script>
+const DIMENSIONS = ["bravery","freedom","passion","protection","extroversion","morality","emotion","attachment"];
+const traitLabels = {
+  bravery:["勇敢","谨慎"], freedom:["自由","秩序"], passion:["热烈","克制"], protection:["守护","野心"],
+  extroversion:["外放","内敛"], morality:["光明","灰色"], emotion:["感性","理性"], attachment:["依恋","独立"]
+};
+const testModes = { basic: {total:36}, full: {total:98} };
+let selectedMode = "basic";
+let currentQuestionIndex = 0;
+let selectedQuestionIds = [];
+let playerName = "";
+let playerTraits = {};
+let history = [];
+
+const questions = {
+q1: {
+  text: "你第一次醒来时，发现自己站在一条被雾气笼罩的英国小巷里，远处有猫头鹰掠过屋顶。你第一反应是？",
+  options: {
+    A: { text: "立刻观察周围，判断有没有危险。", effects: {"bravery": -2, "emotion": -5, "protection": 2} },
+    B: { text: "顺着魔法痕迹往前走，先弄清楚自己在哪里。", effects: {"bravery": 5, "freedom": 4, "emotion": 2} },
+    C: { text: "找一个看起来可靠的人求助。", effects: {"attachment": 5, "morality": 4, "extroversion": 3} },
+    D: { text: "先藏起来，等局势明朗后再行动。", effects: {"bravery": -5, "emotion": -6, "extroversion": -4} }
+  }
+},
+q2: {
+  text: "一封霍格沃茨风格的信件落到你手里，上面写着“不要相信第一个向你伸手的人”。你会怎么理解？",
+  options: {
+    A: { text: "这一定是警告，我会保持距离。", effects: {"bravery": -3, "emotion": -5, "attachment": -4} },
+    B: { text: "这可能是试探，我不会完全相信，也不会完全拒绝。", effects: {"emotion": -4, "morality": 2, "attachment": 1} },
+    C: { text: "我更愿意相信自己的直觉，而不是一封陌生的信。", effects: {"freedom": 4, "emotion": 5, "bravery": 3} },
+    D: { text: "我会故意接近那个人，看看对方到底想做什么。", effects: {"bravery": 7, "freedom": 4, "morality": -3, "emotion": -3} }
+  }
+},
+q3: {
+  text: "如果你必须选择一种魔法课作为最擅长的领域，你更希望是？",
+  options: {
+    A: { text: "黑魔法防御术，至少要有保护自己的能力。", effects: {"bravery": 6, "protection": 6, "morality": 3} },
+    B: { text: "魔药学，复杂、精密，也最容易影响结果。", effects: {"emotion": -6, "extroversion": -3, "morality": -1} },
+    C: { text: "变形术，把不可能变成可能。", effects: {"bravery": 4, "freedom": 5, "passion": 3} },
+    D: { text: "神奇动物保护课，和不被理解的生命相处。", effects: {"protection": 8, "emotion": 6, "morality": 6} }
+  }
+},
+q4: {
+  text: "深夜，你在走廊尽头看到一扇平时不存在的门。门缝里透出银蓝色的光。你会？",
+  options: {
+    A: { text: "推门进去，机会不是每天都有。", effects: {"bravery": 8, "freedom": 6, "passion": 3, "attachment": -2} },
+    B: { text: "先记下位置，明天再查资料。", effects: {"bravery": -2, "emotion": -6, "protection": 2} },
+    C: { text: "找一个信得过的人一起去。", effects: {"attachment": 6, "morality": 4, "bravery": 1} },
+    D: { text: "不进去，但会在附近观察一段时间。", effects: {"bravery": -4, "emotion": -5, "extroversion": -3} }
+  }
+},
+q5: {
+  text: "如果你在魔法世界拥有一个秘密，你最不希望它被谁知道？",
+  options: {
+    A: { text: "权力机构。", effects: {"freedom": 7, "morality": -2} },
+    B: { text: "亲近的人。", effects: {"attachment": -6, "emotion": -3} },
+    C: { text: "敌人。", effects: {"bravery": -1, "emotion": -5, "protection": 2} },
+    D: { text: "所有人。", effects: {"extroversion": -7, "attachment": -5, "emotion": -4} }
+  }
+},
+q6: {
+  text: "你更容易被哪一种人吸引？",
+  options: {
+    A: { text: "明亮、坚定，像能把黑夜烧开一道口子。", effects: {"bravery": 5, "morality": 5, "passion": 5} },
+    B: { text: "安静、复杂，好像每句话背后都有未说完的故事。", effects: {"extroversion": -6, "emotion": 5, "passion": -2} },
+    C: { text: "危险、优雅，让人知道靠近本身就是冒险。", effects: {"morality": -7, "passion": 6, "bravery": 5} },
+    D: { text: "温柔、可靠，在混乱中仍然让人安心。", effects: {"protection": 7, "morality": 6, "attachment": 5} }
+  }
+},
+q7: {
+  text: "魔法部要求你交出一份关于朋友的报告，否则你会失去重要机会。你会？",
+  options: {
+    A: { text: "拒绝交出朋友的信息。", effects: {"morality": 8, "attachment": 7, "bravery": 5} },
+    B: { text: "写一份无关紧要、不会伤害朋友的报告。", effects: {"emotion": -4, "morality": 4, "attachment": 3} },
+    C: { text: "先答应，再寻找反制方法。", effects: {"emotion": -6, "morality": -3, "bravery": 3} },
+    D: { text: "交出部分信息，但保留最关键的内容。", effects: {"morality": -4, "protection": -4, "emotion": -3} }
+  }
+},
+q8: {
+  text: "如果你不得不加入一个阵营，你更看重什么？",
+  options: {
+    A: { text: "它是否站在正确的一边。", effects: {"morality": 8, "protection": 3} },
+    B: { text: "它是否有能力赢。", effects: {"protection": -8, "morality": -6, "emotion": -4} },
+    C: { text: "它是否保护弱者。", effects: {"protection": 8, "morality": 7, "emotion": 3} },
+    D: { text: "它是否给你足够自由。", effects: {"freedom": 8, "attachment": -4} }
+  }
+},
+q9: {
+  text: "在一场混乱的决斗后，有人误以为是你救了大家，但真正出手的是另一个沉默的人。你会？",
+  options: {
+    A: { text: "当众说明真相。", effects: {"morality": 8, "extroversion": 4, "bravery": 3} },
+    B: { text: "私下告诉那个人，你不会抢走功劳。", effects: {"morality": 6, "attachment": 3, "emotion": 2} },
+    C: { text: "接受误会，但之后用资源回报对方。", effects: {"morality": -4, "protection": -3, "emotion": -4} },
+    D: { text: "先不解释，因为现在稳定局势更重要。", effects: {"emotion": -5, "protection": 3, "morality": -1} }
+  }
+},
+q10: {
+  text: "你在禁书区发现一本书，里面有非常强大的咒语，但显然不该被学生或普通巫师使用。你会？",
+  options: {
+    A: { text: "立刻放回去，这种东西不该碰。", effects: {"morality": 6, "bravery": -4, "emotion": -3} },
+    B: { text: "记录目录，等需要时再研究。", effects: {"emotion": -5, "morality": -1, "freedom": 2} },
+    C: { text: "仔细学习，但绝不轻易使用。", effects: {"emotion": -4, "bravery": 3, "morality": -3} },
+    D: { text: "掌握它，因为危险的不是知识，而是使用者。", effects: {"freedom": 7, "morality": -7, "passion": 5} }
+  }
+},
+q11: {
+  text: "你收到一只陌生猫头鹰送来的礼物，没有署名。你希望里面是什么？",
+  options: {
+    A: { text: "一枚能保护人的护身符。", effects: { protection: 8, morality: 5, attachment: 3 } },
+    B: { text: "一张通往秘密地点的地图。", effects: { freedom: 7, bravery: 5, passion: 3 } },
+    C: { text: "一本写满批注的旧书。", effects: { emotion: -4, extroversion: -4, morality: 2 } },
+    D: { text: "一封没有解释、但字迹很漂亮的信。", effects: { emotion: 6, attachment: 5, passion: 3 } }
+  }
+},
+q12: {
+  text: "如果你必须面对一个你很在乎的人误解你，你会？",
+  options: {
+    A: { text: "立刻解释清楚。", effects: { extroversion: 5, attachment: 5, morality: 4 } },
+    B: { text: "等对方冷静后再说。", effects: { emotion: -3, protection: 3, attachment: 3 } },
+    C: { text: "不解释，让时间证明。", effects: { extroversion: -5, attachment: -4, emotion: -3 } },
+    D: { text: "表面平静，但心里会记很久。", effects: { passion: -2, emotion: 5, attachment: 6 } }
+  }
+},
+q13: {
+  text: "在舞会开始前，你发现自己的礼服被人施了恶作剧咒。你会？",
+  options: {
+    A: { text: "笑着反击，让对方也出丑。", effects: { passion: 7, freedom: 6, extroversion: 6, morality: -2 } },
+    B: { text: "冷静解决，不让任何人看笑话。", effects: { emotion: -6, passion: -3, extroversion: 2 } },
+    C: { text: "找出是谁做的，但不急着报复。", effects: { emotion: -5, morality: -2, bravery: 2 } },
+    D: { text: "干脆不去了，没必要配合无聊场面。", effects: { freedom: 5, attachment: -5, extroversion: -4 } }
+  }
+},
+q14: {
+  text: "你更喜欢哪一种约会？",
+  options: {
+    A: { text: "深夜飞过湖面，风里带着危险和自由。", effects: { bravery: 7, freedom: 8, passion: 6 } },
+    B: { text: "在图书馆角落并肩坐着，偶尔交换一句低声评论。", effects: { extroversion: -7, passion: -4, emotion: -3, attachment: 3 } },
+    C: { text: "去看一场热闹的比赛，和人群一起欢呼。", effects: { extroversion: 7, passion: 6, freedom: 3 } },
+    D: { text: "在阴雨天的咖啡馆里，谈一些不能告诉别人的事。", effects: { emotion: 6, attachment: 6, passion: -2 } }
+  }
+},
+q15: {
+  text: "如果你有一次改变过去的机会，你会选择？",
+  options: {
+    A: { text: "救下一个本不该死去的人。", effects: { protection: 9, attachment: 7, emotion: 5, morality: 4 } },
+    B: { text: "阻止自己犯下某个错误。", effects: { emotion: 4, morality: 4, bravery: -2 } },
+    C: { text: "改变一场战争的结果。", effects: { bravery: 6, protection: 6, morality: -3, passion: 4 } },
+    D: { text: "什么都不改，因为代价可能更糟。", effects: { emotion: -6, morality: 4, freedom: -2 } }
+  }
+},
+q16: {
+  text: "你最害怕哪一种关系？",
+  options: {
+    A: { text: "对方太需要你，让你无法呼吸。", effects: { attachment: -8, freedom: 7, emotion: -3 } },
+    B: { text: "对方从不表达，让你永远猜测。", effects: { attachment: 6, passion: 4, emotion: 3 } },
+    C: { text: "对方太耀眼，让你觉得自己会被丢下。", effects: { attachment: 8, emotion: 5, extroversion: -2 } },
+    D: { text: "对方太危险，让你知道爱也可能毁掉自己。", effects: { morality: 5, emotion: -2, attachment: -3 } }
+  }
+},
+q17: {
+  text: "如果有人为了保护你而对你隐瞒真相，你会？",
+  options: {
+    A: { text: "感激，但仍然希望知道全部。", effects: { attachment: 4, morality: 4, emotion: 2 } },
+    B: { text: "生气，因为我有权选择。", effects: { freedom: 8, passion: 5, morality: 4 } },
+    C: { text: "理解，只要结果是好的。", effects: { protection: 4, attachment: 4, emotion: -3 } },
+    D: { text: "表面接受，之后自己查清楚。", effects: { emotion: -6, morality: -2, freedom: 3 } }
+  }
+},
+q18: {
+  text: "你在霍格莫德遇到一个正在被嘲笑的陌生人。你会？",
+  options: {
+    A: { text: "直接上前制止。", effects: { bravery: 7, protection: 7, morality: 6, extroversion: 3 } },
+    B: { text: "悄悄帮对方脱身。", effects: { protection: 7, morality: 5, extroversion: -2 } },
+    C: { text: "观察形势，避免让事情变糟。", effects: { emotion: -4, bravery: -1, protection: 4 } },
+    D: { text: "记住嘲笑者，以后找机会处理。", effects: { morality: -5, emotion: -5, protection: -3 } }
+  }
+},
+q19: {
+  text: "如果你的伴侣属于一个危险阵营，但对你是真心的，你会？",
+  options: {
+    A: { text: "劝对方离开，否则无法继续。", effects: { morality: 7, protection: 4, attachment: 2 } },
+    B: { text: "试着理解对方为什么会走到那里。", effects: { emotion: 6, attachment: 5, morality: 2 } },
+    C: { text: "接受复杂性，但设下底线。", effects: { morality: 4, emotion: -2, freedom: 3 } },
+    D: { text: "只要对方选择我，我可以暂时不问立场。", effects: { attachment: 8, morality: -7, passion: 5 } }
+  }
+},
+q20: {
+  text: "你更希望别人如何记住你？",
+  options: {
+    A: { text: "一个在关键时刻没有退缩的人。", effects: { bravery: 8, morality: 4, passion: 3 } },
+    B: { text: "一个聪明、冷静、总能解决问题的人。", effects: { emotion: -8, morality: 2, protection: 2 } },
+    C: { text: "一个温柔但不软弱的人。", effects: { protection: 7, morality: 7, emotion: 4 } },
+    D: { text: "一个不属于任何规则的人。", effects: { freedom: 9, attachment: -5, morality: -2 } }
+  }
+},
+q21: {
+  text: "如果你在魔法部工作，你最不适合哪个部门？",
+  options: {
+    A: { text: "需要每天处理繁琐文件的部门。", effects: { freedom: 6, passion: 3, emotion: 2 } },
+    B: { text: "需要频繁社交周旋的部门。", effects: { extroversion: -7, emotion: -3 } },
+    C: { text: "需要服从上级、不许质疑的部门。", effects: { freedom: 8, morality: 2, passion: 3 } },
+    D: { text: "需要面对危险现场的部门。", effects: { bravery: -6, protection: 3, emotion: -2 } }
+  }
+},
+q22: {
+  text: "你发现有人在暗中监视你。你会？",
+  options: {
+    A: { text: "故意暴露假信息，引对方上钩。", effects: { emotion: -7, morality: -5, bravery: 4 } },
+    B: { text: "立刻寻求帮助。", effects: { attachment: 6, protection: 5, bravery: -2 } },
+    C: { text: "假装没发现，继续观察。", effects: { emotion: -6, extroversion: -4, morality: -2 } },
+    D: { text: "主动反追踪，查出幕后的人。", effects: { bravery: 7, freedom: 4, emotion: -4 } }
+  }
+},
+q23: {
+  text: "哪一种告白方式最能打动你？",
+  options: {
+    A: { text: "对方在危险中毫不犹豫选择你。", effects: { attachment: 8, bravery: 5, passion: 5 } },
+    B: { text: "对方记得你说过的每一件小事。", effects: { attachment: 7, emotion: 6, protection: 3 } },
+    C: { text: "对方用很笨拙但真诚的方式表达。", effects: { morality: 5, emotion: 4, passion: 3 } },
+    D: { text: "对方没有说爱，但把最重要的秘密交给你。", effects: { attachment: 6, emotion: 5, morality: -2 } }
+  }
+},
+q24: {
+  text: "如果你拥有一件隐形衣，你最可能用它做什么？",
+  options: {
+    A: { text: "夜游，去看白天看不到的霍格沃茨。", effects: { freedom: 8, bravery: 6, passion: 4 } },
+    B: { text: "保护某个人，避免他被发现。", effects: { protection: 8, attachment: 5, morality: 5 } },
+    C: { text: "进入禁区寻找答案。", effects: { bravery: 5, freedom: 5, morality: -3, emotion: -2 } },
+    D: { text: "远离所有人，享受无人打扰的安静。", effects: { extroversion: -8, attachment: -6, freedom: 4 } }
+  }
+},
+q25: {
+  text: "你更讨厌哪一种人？",
+  options: {
+    A: { text: "虚伪地把控制包装成关心的人。", effects: { freedom: 8, morality: 6, passion: 2 } },
+    B: { text: "为了利益背叛朋友的人。", effects: { attachment: 7, morality: 7, protection: 4 } },
+    C: { text: "明明有能力却选择冷眼旁观的人。", effects: { protection: 7, morality: 6, bravery: 4 } },
+    D: { text: "自以为正确，所以伤害所有人的人。", effects: { morality: 8, emotion: -2, protection: 5 } }
+  }
+},
+q26: {
+  text: "如果你必须选择一种魔法物品陪伴你，你会选？",
+  options: {
+    A: { text: "活点地图。", effects: { freedom: 8, bravery: 4, passion: 4 } },
+    B: { text: "时间转换器。", effects: { emotion: -6, protection: 3, morality: -2 } },
+    C: { text: "双面镜。", effects: { attachment: 7, protection: 4, emotion: 2 } },
+    D: { text: "老旧但可靠的魔杖。", effects: { protection: 5, morality: 5, passion: -2 } }
+  }
+},
+q27: {
+  text: "在战争时期，你更可能承担什么角色？",
+  options: {
+    A: { text: "前线行动者。", effects: { bravery: 9, passion: 5, protection: 5 } },
+    B: { text: "情报分析者。", effects: { emotion: -8, extroversion: -3, protection: 2 } },
+    C: { text: "后方保护者。", effects: { protection: 9, morality: 6, attachment: 5 } },
+    D: { text: "双面潜伏者。", effects: { morality: -6, emotion: -7, bravery: 4 } }
+  }
+},
+q28: {
+  text: "你对“命运”的态度更接近哪一种？",
+  options: {
+    A: { text: "命运存在，但人可以反抗。", effects: { bravery: 6, freedom: 6, morality: 3 } },
+    B: { text: "命运只是别人用来控制你的故事。", effects: { freedom: 9, morality: -2, passion: 3 } },
+    C: { text: "有些事注定发生，能做的是减少伤害。", effects: { protection: 6, emotion: -3, bravery: -2 } },
+    D: { text: "我不相信命运，只相信选择和代价。", effects: { emotion: -6, freedom: 5, morality: 2 } }
+  }
+},
+q29: {
+  text: "你希望伴侣在你崩溃时怎么做？",
+  options: {
+    A: { text: "抱住你，让你知道自己不是一个人。", effects: { attachment: 8, emotion: 6, protection: 4 } },
+    B: { text: "不追问，只安静陪着你。", effects: { attachment: 4, extroversion: -4, passion: -4 } },
+    C: { text: "帮你分析问题，给出解决办法。", effects: { emotion: -7, protection: 4, morality: 2 } },
+    D: { text: "带你离开现场，哪怕方式有点冲动。", effects: { bravery: 5, freedom: 6, passion: 6 } }
+  }
+},
+q30: {
+  text: "你在一面厄里斯魔镜前停下。你觉得自己最可能看到什么？",
+  options: {
+    A: { text: "一个你失去的人重新站在你身边。", effects: { attachment: 8, emotion: 8, protection: 3 } },
+    B: { text: "一个终于安全、稳定的未来。", effects: { protection: 7, freedom: -5, attachment: 5 } },
+    C: { text: "一个被所有人认可的自己。", effects: { extroversion: 5, protection: -5, attachment: 4 } },
+    D: { text: "一个没有任何束缚、完全自由的自己。", effects: { freedom: 9, attachment: -7, extroversion: -2 } }
+  }
+},
+q31: {
+  text: "如果你必须隐藏自己的真实身份，你会选择什么伪装？",
+  options: {
+    A: { text: "普通、无害、不会被注意的人。", effects: { extroversion: -8, emotion: -4, bravery: -2 } },
+    B: { text: "高调、耀眼，让别人不敢轻易怀疑的人。", effects: { extroversion: 8, bravery: 5, protection: -4 } },
+    C: { text: "冷淡、难以接近，减少交流的人。", effects: { extroversion: -6, emotion: -6, attachment: -4 } },
+    D: { text: "温和、可靠，让别人主动相信你的人。", effects: { morality: 5, attachment: 4, extroversion: 3 } }
+  }
+},
+q32: {
+  text: "你更容易原谅哪一种错误？",
+  options: {
+    A: { text: "因为害怕而逃避。", effects: { emotion: 5, morality: 3, bravery: -2 } },
+    B: { text: "因为爱而隐瞒。", effects: { attachment: 6, emotion: 4, morality: -2 } },
+    C: { text: "因为野心而越界。", effects: { protection: -6, morality: -6, emotion: -2 } },
+    D: { text: "因为冲动而惹祸。", effects: { passion: 5, freedom: 3, morality: 1 } }
+  }
+},
+q33: {
+  text: "如果你收到一枚戒指，上面刻着古老家族的纹章，你会？",
+  options: {
+    A: { text: "感到不安，先查清来源。", effects: { emotion: -6, bravery: -2, morality: 2 } },
+    B: { text: "被它吸引，但不会轻易戴上。", effects: { emotion: -3, passion: 3, morality: -2 } },
+    C: { text: "觉得它漂亮，也许代表某种承诺。", effects: { attachment: 6, emotion: 5, passion: 2 } },
+    D: { text: "直接拒绝，家族、血统这些东西让我反感。", effects: { freedom: 8, morality: 5, passion: 3 } }
+  }
+},
+q34: {
+  text: "你更喜欢哪一种结局？",
+  options: {
+    A: { text: "战争结束后，和爱人一起过普通生活。", effects: { protection: 7, attachment: 7, morality: 5 } },
+    B: { text: "两个人都带着伤痕，但仍然选择彼此。", effects: { attachment: 8, emotion: 7, passion: 3 } },
+    C: { text: "你们没有彻底被世界接受，却拥有自己的自由。", effects: { freedom: 8, attachment: 4, morality: -1 } },
+    D: { text: "爱情不是胜利，而是共同走向更大的权力或目标。", effects: { protection: -9, morality: -8, emotion: -5, passion: 5 } }
+  }
+},
+q35: {
+  text: "如果你发现伴侣身上有不可改变的黑暗面，你会？",
+  options: {
+    A: { text: "接受复杂性，但要求对方不伤害无辜者。", effects: { morality: 5, emotion: 3, attachment: 4 } },
+    B: { text: "试图拯救对方。", effects: { protection: 7, attachment: 7, emotion: 6 } },
+    C: { text: "离开，因为爱不能成为纵容。", effects: { morality: 8, attachment: -4, emotion: -4 } },
+    D: { text: "被吸引，但会保留自己的退路。", effects: { morality: -5, emotion: -4, passion: 5, freedom: 4 } }
+  }
+},
+q36: {
+  text: "测试快结束时，那封最初的羊皮纸信又出现了。最后一行字问你：“你愿意为了爱付出什么？”你会回答？",
+  options: {
+    A: { text: "我的勇气。", effects: { bravery: 8, passion: 4, morality: 3 } },
+    B: { text: "我的信任。", effects: { attachment: 8, emotion: 5, morality: 4 } },
+    C: { text: "我的自由。", effects: { attachment: 7, freedom: -8, passion: 3 } },
+    D: { text: "我的野心。", effects: { protection: -8, morality: -7, emotion: -4, passion: 5 } }
+  }
+},
+q37: {
+  text: "你在一间陌生的魔杖店里醒来，四周的架子高得几乎看不到顶。店主不在，柜台上却放着三根正在微微发光的魔杖。你会？",
+  options: {
+    A: { text: "等店主回来，不随便碰陌生魔杖。", effects: {"bravery": -4, "freedom": -5, "emotion": -4} },
+    B: { text: "先观察每根魔杖的材质和反应，再决定是否靠近。", effects: {"bravery": 2, "emotion": -5, "protection": 2} },
+    C: { text: "直接拿起最亮的那根，既然它回应了我，就说明有意义。", effects: {"bravery": 8, "freedom": 6, "passion": 5} },
+    D: { text: "不碰魔杖，而是先寻找出口和店内隐藏的线索。", effects: {"bravery": -2, "emotion": -6, "extroversion": -3} }
+  }
+},
+q38: {
+  text: "你发现自己被分到一个并不喜欢你的学院，许多人用怀疑的眼神看你。你会怎么做？",
+  options: {
+    A: { text: "用实力证明他们错了，不急着解释。", effects: {"bravery": 6, "passion": 3} },
+    B: { text: "主动融入，至少先让自己不被孤立。", effects: {"extroversion": 6, "attachment": 5} },
+    C: { text: "保持距离，没必要讨好不信任自己的人。", effects: {"freedom": 6, "attachment": -6} },
+    D: { text: "找出学院内部真正有影响力的人，先了解规则。", effects: {"emotion": -6, "protection": -5, "morality": -3} }
+  }
+},
+q39: {
+  text: "某天清晨，你的床边出现了一枚没有署名的银色戒指。它没有诅咒痕迹，却让你感觉不安。你会？",
+  options: {
+    A: { text: "立刻交给教授或魔法部，不让自己卷入未知风险。", effects: {"morality": 7, "protection": 6} },
+    B: { text: "暂时保管，暗中调查它的来源。", effects: {"emotion": 4, "attachment": 5} },
+    C: { text: "戴上它一小会儿，看看会发生什么。", effects: {"passion": 7, "morality": -5} },
+    D: { text: "把它藏起来，先不告诉任何人。", effects: {"emotion": -6, "morality": -3} }
+  }
+},
+q40: {
+  text: "你在走廊里听见两个学生讨论一个即将发生的恶作剧，而被捉弄的人与你并不熟。你会？",
+  options: {
+    A: { text: "提醒那个被捉弄的人，让他提前避开。", effects: {"protection": 7, "morality": 7} },
+    B: { text: "阻止恶作剧，但尽量不把事情闹大。", effects: {"protection": 5, "emotion": -2} },
+    C: { text: "观察情况，如果只是无伤大雅就不插手。", effects: {"freedom": 3, "morality": -2} },
+    D: { text: "记住这件事，必要时用它作为交换筹码。", effects: {"emotion": -6, "morality": -5} }
+  }
+},
+q41: {
+  text: "如果你能拥有一种与生俱来的魔法天赋，你更希望是哪一种？",
+  options: {
+    A: { text: "能在危险到来前感知异常。", effects: {"bravery": -4, "freedom": -5, "emotion": -4} },
+    B: { text: "能让他人更容易信任你。", effects: {"bravery": 2, "emotion": -5, "protection": 2} },
+    C: { text: "能看穿谎言和伪装。", effects: {"bravery": 8, "freedom": 6, "passion": 5} },
+    D: { text: "能让自己的魔力在情绪强烈时爆发。", effects: {"bravery": -2, "emotion": -6, "extroversion": -3} }
+  }
+},
+q42: {
+  text: "你在黑湖边发现一封被水浸湿的信，信中只剩下一句话：“不要让他知道你已经想起来了。”你会？",
+  options: {
+    A: { text: "立刻寻找信中提到的“他”是谁。", effects: {"bravery": 6, "passion": 3} },
+    B: { text: "把信收好，先确认自己是否真的失去了记忆。", effects: {"extroversion": 6, "attachment": 5} },
+    C: { text: "假装什么都没发生，观察身边人的反应。", effects: {"freedom": 6, "attachment": -6} },
+    D: { text: "把这句话告诉最信任的人，一起判断风险。", effects: {"emotion": -6, "protection": -5, "morality": -3} }
+  }
+},
+q43: {
+  text: "如果你被邀请参加一场纯血家族的私人晚宴，你最在意什么？",
+  options: {
+    A: { text: "自己是否会被当作外人审视。", effects: {"morality": 7, "protection": 6} },
+    B: { text: "这场晚宴背后是否有政治目的。", effects: {"emotion": 4, "attachment": 5} },
+    C: { text: "桌上会出现哪些能透露家族关系的细节。", effects: {"passion": 7, "morality": -5} },
+    D: { text: "是否有人会在这种场合向我提出无法拒绝的要求。", effects: {"emotion": -6, "morality": -3} }
+  }
+},
+q44: {
+  text: "你更能接受哪一种伴侣的缺点？",
+  options: {
+    A: { text: "不擅长表达，但会用行动证明。", effects: {"protection": 7, "morality": 7} },
+    B: { text: "太冲动，经常先做了再解释。", effects: {"protection": 5, "emotion": -2} },
+    C: { text: "太骄傲，明明在乎却不愿承认。", effects: {"freedom": 3, "morality": -2} },
+    D: { text: "太危险，让你必须时刻保持清醒。", effects: {"emotion": -6, "morality": -5} }
+  }
+},
+q45: {
+  text: "你误入一间会根据内心恐惧变化的房间。房间开始变暗，你听见有人在呼唤你的名字。你会？",
+  options: {
+    A: { text: "强迫自己冷静，先判断声音是否真实。", effects: {"bravery": -4, "freedom": -5, "emotion": -4} },
+    B: { text: "回应那个声音，哪怕知道可能是陷阱。", effects: {"bravery": 2, "emotion": -5, "protection": 2} },
+    C: { text: "用咒语照亮房间，主动寻找出口。", effects: {"bravery": 8, "freedom": 6, "passion": 5} },
+    D: { text: "留在原地，等房间显露更多信息。", effects: {"bravery": -2, "emotion": -6, "extroversion": -3} }
+  }
+},
+q46: {
+  text: "如果你必须选择一种魔法交通方式，你更喜欢？",
+  options: {
+    A: { text: "飞天扫帚，直接、自由、风从身边掠过。", effects: {"bravery": 6, "passion": 3} },
+    B: { text: "门钥匙，虽然不舒服，但效率最高。", effects: {"extroversion": 6, "attachment": 5} },
+    C: { text: "夜骐，安静又神秘，只属于见过死亡的人。", effects: {"freedom": 6, "attachment": -6} },
+    D: { text: "幻影移形，危险但足够隐秘。", effects: {"emotion": -6, "protection": -5, "morality": -3} }
+  }
+},
+q47: {
+  text: "你在战后清理废墟时，发现一张旧照片。照片里的人后来站到了错误的阵营。你会？",
+  options: {
+    A: { text: "留下它，慢慢理解背后的故事。", effects: {"morality": 7, "protection": 6} },
+    B: { text: "交给应该拥有它的人。", effects: {"emotion": 4, "attachment": 5} },
+    C: { text: "先查清真相，再决定是否相信。", effects: {"passion": 7, "morality": -5} },
+    D: { text: "销毁或隐藏它，避免被利用。", effects: {"emotion": -6, "morality": -3} }
+  }
+},
+q48: {
+  text: "如果有人对你说：“我不能保证自己永远站在正确的一边，但我会站在你这边。”你会怎么想？",
+  options: {
+    A: { text: "我需要底线，不只是偏爱。", effects: {"protection": 7, "morality": 7} },
+    B: { text: "危险但动人，我会记住。", effects: {"protection": 5, "emotion": -2} },
+    C: { text: "被选择本身已经足够珍贵。", effects: {"freedom": 3, "morality": -2} },
+    D: { text: "我会怀疑这是不是操控。", effects: {"emotion": -6, "morality": -5} }
+  }
+},
+q49: {
+  text: "你发现自己能听懂蛇语，但这项能力会让许多人害怕你。你会？",
+  options: {
+    A: { text: "隐藏它，避免麻烦。", effects: {"bravery": -4, "freedom": -5, "emotion": -4} },
+    B: { text: "研究它，能力本身没有善恶。", effects: {"bravery": 2, "emotion": -5, "protection": 2} },
+    C: { text: "告诉亲近的人。", effects: {"bravery": 8, "freedom": 6, "passion": 5} },
+    D: { text: "利用它获取秘密。", effects: {"bravery": -2, "emotion": -6, "extroversion": -3} }
+  }
+},
+q50: {
+  text: "你在圣芒戈遇见一个失去记忆的陌生人，对方似乎只信任你。你会？",
+  options: {
+    A: { text: "帮他寻找身份，但保持距离。", effects: {"bravery": 6, "passion": 3} },
+    B: { text: "暂时陪着他直到安心。", effects: {"extroversion": 6, "attachment": 5} },
+    C: { text: "先确认他是否危险。", effects: {"freedom": 6, "attachment": -6} },
+    D: { text: "不告诉别人，自己查明真相。", effects: {"emotion": -6, "protection": -5, "morality": -3} }
+  }
+},
+q51: {
+  text: "如果你必须守护一个秘密十年，期间不能告诉任何人，你觉得最困难的是？",
+  options: {
+    A: { text: "害怕被误解。", effects: {"morality": 7, "protection": 6} },
+    B: { text: "害怕秘密改变我。", effects: {"emotion": 4, "attachment": 5} },
+    C: { text: "害怕压力让我失控。", effects: {"passion": 7, "morality": -5} },
+    D: { text: "害怕最后发现不值得。", effects: {"emotion": -6, "morality": -3} }
+  }
+},
+q52: {
+  text: "你在课堂上被教授误会并当众批评，但你知道真正犯错的是另一个人。你会？",
+  options: {
+    A: { text: "当场解释。", effects: {"protection": 7, "morality": 7} },
+    B: { text: "课后私下说明。", effects: {"protection": 5, "emotion": -2} },
+    C: { text: "暂时忍下，以后处理。", effects: {"freedom": 3, "morality": -2} },
+    D: { text: "不解释，不浪费情绪。", effects: {"emotion": -6, "morality": -5} }
+  }
+},
+q53: {
+  text: "如果你拥有一只猫头鹰，你希望它是什么样的？",
+  options: {
+    A: { text: "聪明稳重。", effects: {"bravery": -4, "freedom": -5, "emotion": -4} },
+    B: { text: "古怪但忠诚。", effects: {"bravery": 2, "emotion": -5, "protection": 2} },
+    C: { text: "漂亮显眼。", effects: {"bravery": 8, "freedom": 6, "passion": 5} },
+    D: { text: "安静敏捷。", effects: {"bravery": -2, "emotion": -6, "extroversion": -3} }
+  }
+},
+q54: {
+  text: "你在某本古书里读到一句话：“爱是最古老的保护魔法，也是最容易被滥用的咒语。”你更认同？",
+  options: {
+    A: { text: "爱不能变成控制。", effects: {"bravery": 6, "passion": 3} },
+    B: { text: "爱会牺牲判断。", effects: {"extroversion": 6, "attachment": 5} },
+    C: { text: "我更相信行动。", effects: {"freedom": 6, "attachment": -6} },
+    D: { text: "错的是利用爱的人。", effects: {"emotion": -6, "protection": -5, "morality": -3} }
+  }
+},
+q55: {
+  text: "如果你被迫与一个讨厌的人合作完成任务，你会？",
+  options: {
+    A: { text: "保持专业。", effects: {"morality": 7, "protection": 6} },
+    B: { text: "试着了解对方。", effects: {"emotion": 4, "attachment": 5} },
+    C: { text: "观察弱点。", effects: {"passion": 7, "morality": -5} },
+    D: { text: "明确分工，结束后远离。", effects: {"emotion": -6, "morality": -3} }
+  }
+},
+q56: {
+  text: "你在禁林深处看到一只受伤的神奇动物，但附近有明显的危险痕迹。你会？",
+  options: {
+    A: { text: "先确认安全再救。", effects: {"protection": 7, "morality": 7} },
+    B: { text: "立刻靠近救助。", effects: {"protection": 5, "emotion": -2} },
+    C: { text: "找专业的人帮忙。", effects: {"freedom": 3, "morality": -2} },
+    D: { text: "留下标记观察陷阱。", effects: {"emotion": -6, "morality": -5} }
+  }
+},
+q57: {
+  text: "如果你在魔法世界里拥有一间属于自己的房间，你希望它更像？",
+  options: {
+    A: { text: "安静阁楼。", effects: {"bravery": -4, "freedom": -5, "emotion": -4} },
+    B: { text: "高塔房间。", effects: {"bravery": 2, "emotion": -5, "protection": 2} },
+    C: { text: "温暖小客厅。", effects: {"bravery": 8, "freedom": 6, "passion": 5} },
+    D: { text: "有暗门的旧房间。", effects: {"bravery": -2, "emotion": -6, "extroversion": -3} }
+  }
+},
+q58: {
+  text: "你收到一张舞会邀请，对方只写了一句话：“如果你愿意来，我会等。”你会？",
+  options: {
+    A: { text: "被克制打动。", effects: {"bravery": 6, "passion": 3} },
+    B: { text: "需要更多确认。", effects: {"extroversion": 6, "attachment": 5} },
+    C: { text: "喜欢这种不强迫。", effects: {"freedom": 6, "attachment": -6} },
+    D: { text: "怀疑对方制造神秘感。", effects: {"emotion": -6, "protection": -5, "morality": -3} }
+  }
+},
+q59: {
+  text: "你更不能接受伴侣哪一种行为？",
+  options: {
+    A: { text: "隐瞒重要事情。", effects: {"morality": 7, "protection": 6} },
+    B: { text: "剥夺我的选择。", effects: {"emotion": 4, "attachment": 5} },
+    C: { text: "公开轻视我。", effects: {"passion": 7, "morality": -5} },
+    D: { text: "把野心放在一切之上。", effects: {"emotion": -6, "morality": -3} }
+  }
+},
+q60: {
+  text: "你在对角巷看到一面会展示“你最适合的未来”的橱窗。你希望里面出现？",
+  options: {
+    A: { text: "平静真实的家。", effects: {"protection": 7, "morality": 7} },
+    B: { text: "冒险旅程。", effects: {"protection": 5, "emotion": -2} },
+    C: { text: "被认可的成就。", effects: {"freedom": 3, "morality": -2} },
+    D: { text: "并肩站在黑暗前的人。", effects: {"emotion": -6, "morality": -5} }
+  }
+},
+q61: {
+  text: "如果你必须在战争前夜写一封信，你会写给谁？",
+  options: {
+    A: { text: "写给家人。", effects: {"bravery": -4, "freedom": -5, "emotion": -4} },
+    B: { text: "写给爱人。", effects: {"bravery": 2, "emotion": -5, "protection": 2} },
+    C: { text: "写给未来的自己。", effects: {"bravery": 8, "freedom": 6, "passion": 5} },
+    D: { text: "不写，牵挂会让人犹豫。", effects: {"bravery": -2, "emotion": -6, "extroversion": -3} }
+  }
+},
+q62: {
+  text: "你发现伴侣曾经做过一件严重错误的事，但他/她一直在弥补。你会？",
+  options: {
+    A: { text: "看现在如何选择。", effects: {"bravery": 6, "passion": 3} },
+    B: { text: "要求全部真相。", effects: {"extroversion": 6, "attachment": 5} },
+    C: { text: "理解但不轻易原谅。", effects: {"freedom": 6, "attachment": -6} },
+    D: { text: "看是否伤害无辜。", effects: {"emotion": -6, "protection": -5, "morality": -3} }
+  }
+},
+q63: {
+  text: "你更喜欢哪一种相处方式？",
+  options: {
+    A: { text: "并肩做事。", effects: {"morality": 7, "protection": 6} },
+    B: { text: "经常开玩笑。", effects: {"emotion": 4, "attachment": 5} },
+    C: { text: "保持独立空间。", effects: {"passion": 7, "morality": -5} },
+    D: { text: "深度绑定。", effects: {"emotion": -6, "morality": -3} }
+  }
+},
+q64: {
+  text: "如果你在魔法部档案室里发现自己的名字出现在一份未来名单上，你会？",
+  options: {
+    A: { text: "立刻查用途。", effects: {"protection": 7, "morality": 7} },
+    B: { text: "抄下内容再装作没看见。", effects: {"protection": 5, "emotion": -2} },
+    C: { text: "寻找共同点。", effects: {"freedom": 3, "morality": -2} },
+    D: { text: "销毁名单。", effects: {"emotion": -6, "morality": -5} }
+  }
+},
+q65: {
+  text: "你在霍格沃茨收到一张匿名纸条：“今晚十二点，天文塔见。你会得到答案。”你会？",
+  options: {
+    A: { text: "去，但准备退路。", effects: {"bravery": -4, "freedom": -5, "emotion": -4} },
+    B: { text: "不去。", effects: {"bravery": 2, "emotion": -5, "protection": 2} },
+    C: { text: "找人一起。", effects: {"bravery": 8, "freedom": 6, "passion": 5} },
+    D: { text: "提前躲起来观察。", effects: {"bravery": -2, "emotion": -6, "extroversion": -3} }
+  }
+},
+q66: {
+  text: "如果你能选择一个守护神咒的形态，你更希望它象征？",
+  options: {
+    A: { text: "勇气和保护。", effects: {"bravery": 6, "passion": 3} },
+    B: { text: "自由和远方。", effects: {"extroversion": 6, "attachment": 5} },
+    C: { text: "忠诚和陪伴。", effects: {"freedom": 6, "attachment": -6} },
+    D: { text: "神秘和独立。", effects: {"emotion": -6, "protection": -5, "morality": -3} }
+  }
+},
+q67: {
+  text: "你最容易在什么情况下心动？",
+  options: {
+    A: { text: "危险时不放手。", effects: {"morality": 7, "protection": 6} },
+    B: { text: "记得小事。", effects: {"emotion": 4, "attachment": 5} },
+    C: { text: "当众相信你。", effects: {"passion": 7, "morality": -5} },
+    D: { text: "展露真实不体面的一面。", effects: {"emotion": -6, "morality": -3} }
+  }
+},
+q68: {
+  text: "如果有人为了达成更伟大的目标牺牲少数人，你会？",
+  options: {
+    A: { text: "不能接受牺牲无辜。", effects: {"protection": 7, "morality": 7} },
+    B: { text: "理解但不参与。", effects: {"protection": 5, "emotion": -2} },
+    C: { text: "看目标是否重要。", effects: {"freedom": 3, "morality": -2} },
+    D: { text: "被牺牲者必须有选择权。", effects: {"emotion": -6, "morality": -5} }
+  }
+},
+q69: {
+  text: "你最喜欢哪一种魔法世界天气？",
+  options: {
+    A: { text: "暴风雨。", effects: {"bravery": -4, "freedom": -5, "emotion": -4} },
+    B: { text: "大雪。", effects: {"bravery": 2, "emotion": -5, "protection": 2} },
+    C: { text: "晴朗黄昏。", effects: {"bravery": 8, "freedom": 6, "passion": 5} },
+    D: { text: "起雾清晨。", effects: {"bravery": -2, "emotion": -6, "extroversion": -3} }
+  }
+},
+q70: {
+  text: "你发现一个人总在暗处帮你，却从不承认。你会？",
+  options: {
+    A: { text: "直接拆穿。", effects: {"bravery": 6, "passion": 3} },
+    B: { text: "不揭穿但回应。", effects: {"extroversion": 6, "attachment": 5} },
+    C: { text: "怀疑另有目的。", effects: {"freedom": 6, "attachment": -6} },
+    D: { text: "等对方承认。", effects: {"emotion": -6, "protection": -5, "morality": -3} }
+  }
+},
+q71: {
+  text: "如果你必须选择一个危险的盟友，你更倾向于？",
+  options: {
+    A: { text: "有底线但脾气不好。", effects: {"morality": 7, "protection": 6} },
+    B: { text: "野心大但聪明。", effects: {"emotion": 4, "attachment": 5} },
+    C: { text: "情绪极端但忠诚。", effects: {"passion": 7, "morality": -5} },
+    D: { text: "冷静神秘看不透。", effects: {"emotion": -6, "morality": -3} }
+  }
+},
+q72: {
+  text: "你在一家旧书店里找到一本会自动续写的日记。它似乎能理解你，也会回应你。你会？",
+  options: {
+    A: { text: "立刻合上。", effects: {"protection": 7, "morality": 7} },
+    B: { text: "试探写几句。", effects: {"protection": 5, "emotion": -2} },
+    C: { text: "交给可信的人检查。", effects: {"freedom": 3, "morality": -2} },
+    D: { text: "暂时留下。", effects: {"emotion": -6, "morality": -5} }
+  }
+},
+q73: {
+  text: "如果某个人爱你，但他的世界会不断把你卷进危险，你会？",
+  options: {
+    A: { text: "可以接受但要知情权。", effects: {"bravery": -4, "freedom": -5, "emotion": -4} },
+    B: { text: "只要真心就承担。", effects: {"bravery": 2, "emotion": -5, "protection": 2} },
+    C: { text: "离开。", effects: {"bravery": 8, "freedom": 6, "passion": 5} },
+    D: { text: "留下但准备退路。", effects: {"bravery": -2, "emotion": -6, "extroversion": -3} }
+  }
+},
+q74: {
+  text: "你更喜欢哪一种信件开头？",
+  options: {
+    A: { text: "我知道你不会轻易相信我。", effects: {"bravery": 6, "passion": 3} },
+    B: { text: "今天发生了一件荒唐事。", effects: {"extroversion": 6, "attachment": 5} },
+    C: { text: "我必须说明真相。", effects: {"freedom": 6, "attachment": -6} },
+    D: { text: "如果你收到信，事情已失控。", effects: {"emotion": -6, "protection": -5, "morality": -3} }
+  }
+},
+q75: {
+  text: "你在战争结束后最想做的第一件事是？",
+  options: {
+    A: { text: "确认重要的人还活着。", effects: {"morality": 7, "protection": 6} },
+    B: { text: "找安静地方睡很久。", effects: {"emotion": 4, "attachment": 5} },
+    C: { text: "清理废墟重建。", effects: {"passion": 7, "morality": -5} },
+    D: { text: "离开去远方。", effects: {"emotion": -6, "morality": -3} }
+  }
+},
+q76: {
+  text: "如果你发现自己被预言提到，你会？",
+  options: {
+    A: { text: "不让预言定义我。", effects: {"protection": 7, "morality": 7} },
+    B: { text: "认真研究它。", effects: {"protection": 5, "emotion": -2} },
+    C: { text: "告诉可信的人。", effects: {"freedom": 3, "morality": -2} },
+    D: { text: "反过来利用它。", effects: {"emotion": -6, "morality": -5} }
+  }
+},
+q77: {
+  text: "你最不喜欢哪一种“保护”？",
+  options: {
+    A: { text: "什么都不告诉我。", effects: {"bravery": -4, "freedom": -5, "emotion": -4} },
+    B: { text: "安排进安全无聊的位置。", effects: {"bravery": 2, "emotion": -5, "protection": 2} },
+    C: { text: "用温柔要求服从。", effects: {"bravery": 8, "freedom": 6, "passion": 5} },
+    D: { text: "为了我伤害无辜。", effects: {"bravery": -2, "emotion": -6, "extroversion": -3} }
+  }
+},
+q78: {
+  text: "你在霍格沃茨厨房里遇到一个偷偷哭泣的人，他不希望别人看见。你会？",
+  options: {
+    A: { text: "留热饮后离开。", effects: {"bravery": 6, "passion": 3} },
+    B: { text: "坐到旁边等待。", effects: {"extroversion": 6, "attachment": 5} },
+    C: { text: "直接询问。", effects: {"freedom": 6, "attachment": -6} },
+    D: { text: "假装没看见，之后暗中帮忙。", effects: {"emotion": -6, "protection": -5, "morality": -3} }
+  }
+},
+q79: {
+  text: "你更容易被哪种眼神打动？",
+  options: {
+    A: { text: "明亮直接。", effects: {"morality": 7, "protection": 6} },
+    B: { text: "疲惫温柔。", effects: {"emotion": 4, "attachment": 5} },
+    C: { text: "冷静审视。", effects: {"passion": 7, "morality": -5} },
+    D: { text: "危险专注。", effects: {"emotion": -6, "morality": -3} }
+  }
+},
+q80: {
+  text: "如果你必须在一场决斗前选择一句话说出口，你会说？",
+  options: {
+    A: { text: "我不会退后。", effects: {"protection": 7, "morality": 7} },
+    B: { text: "我们还有别的办法。", effects: {"protection": 5, "emotion": -2} },
+    C: { text: "别怕，我在这里。", effects: {"freedom": 3, "morality": -2} },
+    D: { text: "你确定要让我认真起来吗？", effects: {"emotion": -6, "morality": -5} }
+  }
+},
+q81: {
+  text: "你更适合哪一种魔法道具？",
+  options: {
+    A: { text: "映出真相的镜子。", effects: {"bravery": -4, "freedom": -5, "emotion": -4} },
+    B: { text: "隐藏行踪的斗篷。", effects: {"bravery": 2, "emotion": -5, "protection": 2} },
+    C: { text: "保护他人的护符。", effects: {"bravery": 8, "freedom": 6, "passion": 5} },
+    D: { text: "打开旧记忆的钥匙。", effects: {"bravery": -2, "emotion": -6, "extroversion": -3} }
+  }
+},
+q82: {
+  text: "如果你的伴侣总是把痛苦藏起来，你会？",
+  options: {
+    A: { text: "不逼问但陪着。", effects: {"bravery": 6, "passion": 3} },
+    B: { text: "直接指出问题。", effects: {"extroversion": 6, "attachment": 5} },
+    C: { text: "用行动让对方依靠。", effects: {"freedom": 6, "attachment": -6} },
+    D: { text: "等爆发后处理。", effects: {"emotion": -6, "protection": -5, "morality": -3} }
+  }
+},
+q83: {
+  text: "你在魔法世界中最害怕被贴上哪种标签？",
+  options: {
+    A: { text: "软弱。", effects: {"morality": 7, "protection": 6} },
+    B: { text: "危险。", effects: {"emotion": 4, "attachment": 5} },
+    C: { text: "无用。", effects: {"passion": 7, "morality": -5} },
+    D: { text: "不属于这里。", effects: {"emotion": -6, "morality": -3} }
+  }
+},
+q84: {
+  text: "如果你能选择一个秘密地点作为约会地点，你会选？",
+  options: {
+    A: { text: "天文塔。", effects: {"protection": 7, "morality": 7} },
+    B: { text: "禁林边缘。", effects: {"protection": 5, "emotion": -2} },
+    C: { text: "图书馆深处。", effects: {"freedom": 3, "morality": -2} },
+    D: { text: "霍格莫德小店。", effects: {"emotion": -6, "morality": -5} }
+  }
+},
+q85: {
+  text: "有人告诉你：“他/她不是你想象中的那种人。”你会？",
+  options: {
+    A: { text: "自己判断。", effects: {"bravery": -4, "freedom": -5, "emotion": -4} },
+    B: { text: "更谨慎观察。", effects: {"bravery": 2, "emotion": -5, "protection": 2} },
+    C: { text: "直接问当事人。", effects: {"bravery": 8, "freedom": 6, "passion": 5} },
+    D: { text: "更想知道真相。", effects: {"bravery": -2, "emotion": -6, "extroversion": -3} }
+  }
+},
+q86: {
+  text: "如果你必须在一个人身上选择最重要的品质，你会选？",
+  options: {
+    A: { text: "忠诚。", effects: {"bravery": 6, "passion": 3} },
+    B: { text: "清醒。", effects: {"extroversion": 6, "attachment": 5} },
+    C: { text: "勇敢。", effects: {"freedom": 6, "attachment": -6} },
+    D: { text: "有趣。", effects: {"emotion": -6, "protection": -5, "morality": -3} }
+  }
+},
+q87: {
+  text: "你更不能忍受哪种关系状态？",
+  options: {
+    A: { text: "明明在意却不说。", effects: {"morality": 7, "protection": 6} },
+    B: { text: "太依赖我。", effects: {"emotion": 4, "attachment": 5} },
+    C: { text: "控制我的选择。", effects: {"passion": 7, "morality": -5} },
+    D: { text: "把我当计划的一部分。", effects: {"emotion": -6, "morality": -3} }
+  }
+},
+q88: {
+  text: "如果你看到一个被所有人误解的人，你第一反应是？",
+  options: {
+    A: { text: "想知道真相。", effects: {"protection": 7, "morality": 7} },
+    B: { text: "想靠近他/她。", effects: {"protection": 5, "emotion": -2} },
+    C: { text: "保持警惕。", effects: {"freedom": 3, "morality": -2} },
+    D: { text: "看如何面对误解。", effects: {"emotion": -6, "morality": -5} }
+  }
+},
+q89: {
+  text: "你更喜欢哪一种结局氛围？",
+  options: {
+    A: { text: "战后重建。", effects: {"bravery": -4, "freedom": -5, "emotion": -4} },
+    B: { text: "去远方重新开始。", effects: {"bravery": 2, "emotion": -5, "protection": 2} },
+    C: { text: "留在权力中心。", effects: {"bravery": 8, "freedom": 6, "passion": 5} },
+    D: { text: "珍惜当下。", effects: {"bravery": -2, "emotion": -6, "extroversion": -3} }
+  }
+},
+q90: {
+  text: "如果你可以问分院帽一个问题，你会问？",
+  options: {
+    A: { text: "我真正适合哪里？", effects: {"bravery": 6, "passion": 3} },
+    B: { text: "你能看见我会变成什么样吗？", effects: {"extroversion": 6, "attachment": 5} },
+    C: { text: "有没有人拒绝过你的判断？", effects: {"freedom": 6, "attachment": -6} },
+    D: { text: "如果我不想被分类呢？", effects: {"emotion": -6, "protection": -5, "morality": -3} }
+  }
+},
+q91: {
+  text: "你发现自己被某个古老家族盯上，对方态度礼貌却明显带着目的。你会？",
+  options: {
+    A: { text: "礼貌但不透露底牌。", effects: {"morality": 7, "protection": 6} },
+    B: { text: "拒绝接触。", effects: {"emotion": 4, "attachment": 5} },
+    C: { text: "反过来利用兴趣。", effects: {"passion": 7, "morality": -5} },
+    D: { text: "找有经验的人判断。", effects: {"emotion": -6, "morality": -3} }
+  }
+},
+q92: {
+  text: "你更喜欢哪一种“被爱”的感觉？",
+  options: {
+    A: { text: "被坚定选择。", effects: {"protection": 7, "morality": 7} },
+    B: { text: "被认真理解。", effects: {"protection": 5, "emotion": -2} },
+    C: { text: "被热烈需要。", effects: {"freedom": 3, "morality": -2} },
+    D: { text: "被尊重自由。", effects: {"emotion": -6, "morality": -5} }
+  }
+},
+q93: {
+  text: "如果你在旧报纸上看到未来伴侣曾经被称为“危险人物”，你会？",
+  options: {
+    A: { text: "查清报道。", effects: {"bravery": -4, "freedom": -5, "emotion": -4} },
+    B: { text: "问对方本人。", effects: {"bravery": 2, "emotion": -5, "protection": 2} },
+    C: { text: "警惕但不离开。", effects: {"bravery": 8, "freedom": 6, "passion": 5} },
+    D: { text: "被危险标签吸引。", effects: {"bravery": -2, "emotion": -6, "extroversion": -3} }
+  }
+},
+q94: {
+  text: "你在一次任务中必须伪装身份，你会选择？",
+  options: {
+    A: { text: "普通降低存在感。", effects: {"bravery": 6, "passion": 3} },
+    B: { text: "扮成有权势的人。", effects: {"extroversion": 6, "attachment": 5} },
+    C: { text: "扮成温和可信的人。", effects: {"freedom": 6, "attachment": -6} },
+    D: { text: "扮成相反的自己。", effects: {"emotion": -6, "protection": -5, "morality": -3} }
+  }
+},
+q95: {
+  text: "如果你听见某个人在梦中喊你的名字，你会？",
+  options: {
+    A: { text: "装作不知道。", effects: {"morality": 7, "protection": 6} },
+    B: { text: "主动询问。", effects: {"emotion": 4, "attachment": 5} },
+    C: { text: "感到心动。", effects: {"passion": 7, "morality": -5} },
+    D: { text: "感到不安。", effects: {"emotion": -6, "morality": -3} }
+  }
+},
+q96: {
+  text: "你希望自己在魔法世界里的爱情更像？",
+  options: {
+    A: { text: "一盏灯。", effects: {"protection": 7, "morality": 7} },
+    B: { text: "一阵风。", effects: {"protection": 5, "emotion": -2} },
+    C: { text: "一场火。", effects: {"freedom": 3, "morality": -2} },
+    D: { text: "一本旧书。", effects: {"emotion": -6, "morality": -5} }
+  }
+},
+q97: {
+  text: "如果最后一战前，伴侣要求你离开战场，你会？",
+  options: {
+    A: { text: "拒绝，我有权留下。", effects: {"bravery": -4, "freedom": -5, "emotion": -4} },
+    B: { text: "理解担心但自己选择。", effects: {"bravery": 2, "emotion": -5, "protection": 2} },
+    C: { text: "若会拖累就离开。", effects: {"bravery": 8, "freedom": 6, "passion": 5} },
+    D: { text: "表面答应，实际回去。", effects: {"bravery": -2, "emotion": -6, "extroversion": -3} }
+  }
+},
+q98: {
+  text: "测试的最后，你再次看见那封最初的羊皮纸信。最后一行字变成：“你真正想从这个世界带走什么？”你会选择？",
+  options: {
+    A: { text: "一个愿意回头找你的人。", effects: {"bravery": 6, "passion": 3} },
+    B: { text: "一段勇敢活过的记忆。", effects: {"extroversion": 6, "attachment": 5} },
+    C: { text: "一个不再伪装的归处。", effects: {"freedom": 6, "attachment": -6} },
+    D: { text: "一种改变命运的力量。", effects: {"emotion": -6, "protection": -5, "morality": -3} }
+  }
+}
+};
+
+const characters = [
+  {
+    "id": "harry",
+    "name": "哈利·波特",
+    "hidden": false,
+    "traits": {
+      "bravery": 88,
+      "freedom": 66,
+      "passion": 72,
+      "protection": 92,
+      "extroversion": 54,
+      "morality": 86,
+      "emotion": 76,
+      "attachment": 70
+    },
+    "theme": "守护、命运、孤独中的陪伴",
+    "scene": "霍格沃茨的雪夜",
+    "unlock": {}
+  },
+  {
+    "id": "ron",
+    "name": "罗恩·韦斯莱",
+    "hidden": false,
+    "traits": {
+      "bravery": 70,
+      "freedom": 58,
+      "passion": 74,
+      "protection": 80,
+      "extroversion": 72,
+      "morality": 78,
+      "emotion": 70,
+      "attachment": 82
+    },
+    "theme": "温暖、真实、笨拙但坚定",
+    "scene": "陋居厨房",
+    "unlock": {}
+  },
+  {
+    "id": "hermione",
+    "name": "赫敏·格兰杰",
+    "hidden": false,
+    "traits": {
+      "bravery": 76,
+      "freedom": 42,
+      "passion": 48,
+      "protection": 86,
+      "extroversion": 50,
+      "morality": 88,
+      "emotion": 38,
+      "attachment": 56
+    },
+    "theme": "理性、成长、并肩解决问题",
+    "scene": "图书馆雨夜",
+    "unlock": {}
+  },
+  {
+    "id": "draco",
+    "name": "德拉科·马尔福",
+    "hidden": false,
+    "traits": {
+      "bravery": 48,
+      "freedom": 28,
+      "passion": 42,
+      "protection": 38,
+      "extroversion": 58,
+      "morality": 42,
+      "emotion": 34,
+      "attachment": 76
+    },
+    "theme": "骄傲、防备、家族阴影",
+    "scene": "天文塔冷风",
+    "unlock": {}
+  },
+  {
+    "id": "ginny",
+    "name": "金妮·韦斯莱",
+    "hidden": false,
+    "traits": {
+      "bravery": 82,
+      "freedom": 72,
+      "passion": 78,
+      "protection": 78,
+      "extroversion": 76,
+      "morality": 82,
+      "emotion": 66,
+      "attachment": 62
+    },
+    "theme": "明亮、直接、鲜活的勇气",
+    "scene": "陋居后院飞行",
+    "unlock": {}
+  },
+  {
+    "id": "luna",
+    "name": "卢娜·洛夫古德",
+    "hidden": false,
+    "traits": {
+      "bravery": 62,
+      "freedom": 90,
+      "passion": 46,
+      "protection": 70,
+      "extroversion": 28,
+      "morality": 84,
+      "emotion": 88,
+      "attachment": 44
+    },
+    "theme": "奇异、自由、灵魂共振",
+    "scene": "黑湖边的风铃虫",
+    "unlock": {}
+  },
+  {
+    "id": "neville",
+    "name": "纳威·隆巴顿",
+    "hidden": false,
+    "traits": {
+      "bravery": 74,
+      "freedom": 48,
+      "passion": 46,
+      "protection": 88,
+      "extroversion": 34,
+      "morality": 90,
+      "emotion": 72,
+      "attachment": 68
+    },
+    "theme": "慢热、坚韧、被低估的勇气",
+    "scene": "草药温室",
+    "unlock": {}
+  },
+  {
+    "id": "cedric",
+    "name": "塞德里克·迪戈里",
+    "hidden": false,
+    "traits": {
+      "bravery": 78,
+      "freedom": 48,
+      "passion": 58,
+      "protection": 86,
+      "extroversion": 66,
+      "morality": 92,
+      "emotion": 60,
+      "attachment": 64
+    },
+    "theme": "正直、体面、温柔的光",
+    "scene": "三强争霸赛前",
+    "unlock": {}
+  },
+  {
+    "id": "cho",
+    "name": "秋·张",
+    "hidden": false,
+    "traits": {
+      "bravery": 54,
+      "freedom": 46,
+      "passion": 50,
+      "protection": 66,
+      "extroversion": 44,
+      "morality": 78,
+      "emotion": 84,
+      "attachment": 76
+    },
+    "theme": "细腻、忧伤、雨后湖面",
+    "scene": "长廊雨季",
+    "unlock": {}
+  },
+  {
+    "id": "oliver",
+    "name": "奥利弗·伍德",
+    "hidden": false,
+    "traits": {
+      "bravery": 80,
+      "freedom": 54,
+      "passion": 84,
+      "protection": 64,
+      "extroversion": 72,
+      "morality": 76,
+      "emotion": 42,
+      "attachment": 58
+    },
+    "theme": "目标、热血、直白真诚",
+    "scene": "清晨魁地奇球场",
+    "unlock": {}
+  },
+  {
+    "id": "fred",
+    "name": "弗雷德·韦斯莱",
+    "hidden": false,
+    "traits": {
+      "bravery": 82,
+      "freedom": 88,
+      "passion": 90,
+      "protection": 72,
+      "extroversion": 88,
+      "morality": 72,
+      "emotion": 70,
+      "attachment": 64
+    },
+    "theme": "冒险、笑声、短暂而灿烂",
+    "scene": "魔法把戏坊",
+    "unlock": {}
+  },
+  {
+    "id": "george",
+    "name": "乔治·韦斯莱",
+    "hidden": false,
+    "traits": {
+      "bravery": 76,
+      "freedom": 82,
+      "passion": 76,
+      "protection": 78,
+      "extroversion": 74,
+      "morality": 76,
+      "emotion": 72,
+      "attachment": 66
+    },
+    "theme": "幽默、治愈、热闹后的安静",
+    "scene": "打烊后的把戏坊",
+    "unlock": {}
+  },
+  {
+    "id": "weasley_twins",
+    "name": "弗雷德·韦斯莱与乔治·韦斯莱",
+    "hidden": true,
+    "traits": {
+      "bravery": 84,
+      "freedom": 94,
+      "passion": 92,
+      "protection": 76,
+      "extroversion": 90,
+      "morality": 70,
+      "emotion": 76,
+      "attachment": 72
+    },
+    "theme": "隐藏双人线、双倍生命力、盛大共谋",
+    "scene": "欢迎加入麻烦",
+    "unlock": {
+      "freedomMin": 80,
+      "passionMin": 78,
+      "extroversionMin": 75,
+      "moralityMin": 55
+    }
+  },
+  {
+    "id": "percy",
+    "name": "珀西·韦斯莱",
+    "hidden": false,
+    "traits": {
+      "bravery": 46,
+      "freedom": 20,
+      "passion": 34,
+      "protection": 52,
+      "extroversion": 42,
+      "morality": 68,
+      "emotion": 28,
+      "attachment": 64
+    },
+    "theme": "秩序、责任、迟到半拍的浪漫",
+    "scene": "魔法部深夜办公室",
+    "unlock": {}
+  },
+  {
+    "id": "blaise",
+    "name": "布雷斯·扎比尼",
+    "hidden": false,
+    "traits": {
+      "bravery": 46,
+      "freedom": 48,
+      "passion": 28,
+      "protection": 34,
+      "extroversion": 38,
+      "morality": 42,
+      "emotion": 24,
+      "attachment": 38
+    },
+    "theme": "优雅、旁观、慢棋式靠近",
+    "scene": "斯拉格霍恩晚宴",
+    "unlock": {}
+  },
+  {
+    "id": "theodore",
+    "name": "西奥多·诺特",
+    "hidden": false,
+    "traits": {
+      "bravery": 42,
+      "freedom": 44,
+      "passion": 24,
+      "protection": 46,
+      "extroversion": 18,
+      "morality": 44,
+      "emotion": 30,
+      "attachment": 42
+    },
+    "theme": "沉默、秘密、缓慢信任",
+    "scene": "图书馆最深处",
+    "unlock": {}
+  },
+  {
+    "id": "pansy",
+    "name": "潘西·帕金森",
+    "hidden": false,
+    "traits": {
+      "bravery": 48,
+      "freedom": 30,
+      "passion": 62,
+      "protection": 36,
+      "extroversion": 68,
+      "morality": 40,
+      "emotion": 52,
+      "attachment": 84
+    },
+    "theme": "骄傲、尖锐、别扭依恋",
+    "scene": "斯莱特林壁炉",
+    "unlock": {}
+  },
+  {
+    "id": "krum",
+    "name": "威克多尔·克鲁姆",
+    "hidden": false,
+    "traits": {
+      "bravery": 78,
+      "freedom": 58,
+      "passion": 42,
+      "protection": 74,
+      "extroversion": 24,
+      "morality": 70,
+      "emotion": 46,
+      "attachment": 60
+    },
+    "theme": "沉默、专注、厚重保护",
+    "scene": "圣诞舞会露台",
+    "unlock": {}
+  },
+  {
+    "id": "fleur",
+    "name": "芙蓉·德拉库尔",
+    "hidden": false,
+    "traits": {
+      "bravery": 74,
+      "freedom": 64,
+      "passion": 76,
+      "protection": 72,
+      "extroversion": 82,
+      "morality": 76,
+      "emotion": 58,
+      "attachment": 58
+    },
+    "theme": "耀眼、美丽、强大不退让",
+    "scene": "布斯巴顿雪夜",
+    "unlock": {}
+  },
+  {
+    "id": "sirius",
+    "name": "小天狼星·布莱克",
+    "hidden": false,
+    "traits": {
+      "bravery": 90,
+      "freedom": 96,
+      "passion": 86,
+      "protection": 84,
+      "extroversion": 72,
+      "morality": 68,
+      "emotion": 78,
+      "attachment": 54
+    },
+    "theme": "自由、反叛、伤痕与热烈",
+    "scene": "格里莫广场十二号",
+    "unlock": {}
+  },
+  {
+    "id": "andromeda",
+    "name": "安多米达·布莱克",
+    "hidden": false,
+    "traits": {
+      "bravery": 76,
+      "freedom": 72,
+      "passion": 46,
+      "protection": 86,
+      "extroversion": 34,
+      "morality": 82,
+      "emotion": 56,
+      "attachment": 58
+    },
+    "theme": "安静反叛、成熟温柔、清醒背叛",
+    "scene": "雨夜壁炉",
+    "unlock": {}
+  },
+  {
+    "id": "james",
+    "name": "詹姆·波特",
+    "hidden": false,
+    "traits": {
+      "bravery": 88,
+      "freedom": 76,
+      "passion": 88,
+      "protection": 84,
+      "extroversion": 86,
+      "morality": 76,
+      "emotion": 70,
+      "attachment": 72
+    },
+    "theme": "明亮、勇敢、少年感与成长",
+    "scene": "天文塔恶作剧后",
+    "unlock": {}
+  },
+  {
+    "id": "remus",
+    "name": "莱姆斯·卢平",
+    "hidden": false,
+    "traits": {
+      "bravery": 58,
+      "freedom": 42,
+      "passion": 24,
+      "protection": 86,
+      "extroversion": 18,
+      "morality": 84,
+      "emotion": 54,
+      "attachment": 42
+    },
+    "theme": "克制、温柔、理解伤痛",
+    "scene": "满月前的图书馆",
+    "unlock": {}
+  },
+  {
+    "id": "lily",
+    "name": "莉莉·伊万斯",
+    "hidden": false,
+    "traits": {
+      "bravery": 78,
+      "freedom": 62,
+      "passion": 66,
+      "protection": 90,
+      "extroversion": 62,
+      "morality": 92,
+      "emotion": 70,
+      "attachment": 66
+    },
+    "theme": "清醒、善良、坚定",
+    "scene": "春天温室外",
+    "unlock": {}
+  },
+  {
+    "id": "snape",
+    "name": "西弗勒斯·斯内普",
+    "hidden": false,
+    "traits": {
+      "bravery": 54,
+      "freedom": 28,
+      "passion": 18,
+      "protection": 62,
+      "extroversion": 8,
+      "morality": 44,
+      "emotion": 22,
+      "attachment": 84
+    },
+    "theme": "克制、执念、苦涩的深情",
+    "scene": "地窖魔药教室",
+    "unlock": {}
+  },
+  {
+    "id": "tonks",
+    "name": "尼法朵拉·唐克斯",
+    "hidden": false,
+    "traits": {
+      "bravery": 82,
+      "freedom": 84,
+      "passion": 82,
+      "protection": 82,
+      "extroversion": 78,
+      "morality": 84,
+      "emotion": 74,
+      "attachment": 68
+    },
+    "theme": "鲜活、勇敢、颜色变幻的火焰",
+    "scene": "凤凰社午夜厨房",
+    "unlock": {}
+  },
+  {
+    "id": "bill",
+    "name": "比尔·韦斯莱",
+    "hidden": false,
+    "traits": {
+      "bravery": 78,
+      "freedom": 72,
+      "passion": 56,
+      "protection": 84,
+      "extroversion": 58,
+      "morality": 78,
+      "emotion": 52,
+      "attachment": 56
+    },
+    "theme": "成熟、可靠、远方与归处",
+    "scene": "古灵阁档案室",
+    "unlock": {}
+  },
+  {
+    "id": "charlie",
+    "name": "查理·韦斯莱",
+    "hidden": false,
+    "traits": {
+      "bravery": 86,
+      "freedom": 90,
+      "passion": 62,
+      "protection": 74,
+      "extroversion": 46,
+      "morality": 76,
+      "emotion": 50,
+      "attachment": 34
+    },
+    "theme": "旷野、龙、自由不受拘束",
+    "scene": "罗马尼亚山谷",
+    "unlock": {}
+  },
+  {
+    "id": "petunia",
+    "name": "佩妮·伊万斯",
+    "hidden": true,
+    "traits": {
+      "bravery": 26,
+      "freedom": 18,
+      "passion": 30,
+      "protection": 48,
+      "extroversion": 28,
+      "morality": 54,
+      "emotion": 62,
+      "attachment": 88
+    },
+    "theme": "站在魔法门外、酸涩、被排除的渴望",
+    "scene": "阴天车站",
+    "unlock": {
+      "freedomMax": 35,
+      "attachmentMin": 75,
+      "extroversionMax": 45
+    }
+  },
+  {
+    "id": "newt",
+    "name": "纽特·斯卡曼德",
+    "hidden": false,
+    "traits": {
+      "bravery": 62,
+      "freedom": 76,
+      "passion": 28,
+      "protection": 92,
+      "extroversion": 12,
+      "morality": 90,
+      "emotion": 78,
+      "attachment": 36
+    },
+    "theme": "温柔、异类共情、安静陪伴",
+    "scene": "纽特的箱子",
+    "unlock": {}
+  },
+  {
+    "id": "tina",
+    "name": "蒂娜·戈德斯坦恩",
+    "hidden": false,
+    "traits": {
+      "bravery": 72,
+      "freedom": 38,
+      "passion": 36,
+      "protection": 86,
+      "extroversion": 34,
+      "morality": 88,
+      "emotion": 42,
+      "attachment": 54
+    },
+    "theme": "责任、正义、冷静的保护",
+    "scene": "纽约魔法国会冬夜",
+    "unlock": {}
+  },
+  {
+    "id": "queenie",
+    "name": "奎妮·戈德斯坦恩",
+    "hidden": false,
+    "traits": {
+      "bravery": 46,
+      "freedom": 62,
+      "passion": 76,
+      "protection": 72,
+      "extroversion": 68,
+      "morality": 66,
+      "emotion": 94,
+      "attachment": 88
+    },
+    "theme": "共情、甜美、危险的依赖",
+    "scene": "奎妮的厨房",
+    "unlock": {}
+  },
+  {
+    "id": "theseus",
+    "name": "忒修斯·斯卡曼德",
+    "hidden": false,
+    "traits": {
+      "bravery": 80,
+      "freedom": 32,
+      "passion": 38,
+      "protection": 88,
+      "extroversion": 54,
+      "morality": 82,
+      "emotion": 34,
+      "attachment": 58
+    },
+    "theme": "稳定、责任、成熟伴侣",
+    "scene": "傲罗办公室深夜",
+    "unlock": {}
+  },
+  {
+    "id": "leta",
+    "name": "莱塔·莱斯特兰奇",
+    "hidden": false,
+    "traits": {
+      "bravery": 58,
+      "freedom": 42,
+      "passion": 32,
+      "protection": 58,
+      "extroversion": 36,
+      "morality": 56,
+      "emotion": 76,
+      "attachment": 62
+    },
+    "theme": "忧郁、秘密、自我惩罚",
+    "scene": "巴黎雨夜露台",
+    "unlock": {}
+  },
+  {
+    "id": "credence",
+    "name": "克雷登斯 / 奥瑞利乌斯",
+    "hidden": true,
+    "traits": {
+      "bravery": 34,
+      "freedom": 38,
+      "passion": 66,
+      "protection": 42,
+      "extroversion": 10,
+      "morality": 48,
+      "emotion": 88,
+      "attachment": 94
+    },
+    "theme": "脆弱、压抑、被看见的渴望",
+    "scene": "纽约昏暗巷口",
+    "unlock": {
+      "emotionMin": 75,
+      "attachmentMin": 80,
+      "extroversionMax": 35
+    }
+  },
+  {
+    "id": "nagini",
+    "name": "纳吉尼",
+    "hidden": true,
+    "traits": {
+      "bravery": 50,
+      "freedom": 70,
+      "passion": 38,
+      "protection": 76,
+      "extroversion": 14,
+      "morality": 52,
+      "emotion": 84,
+      "attachment": 72
+    },
+    "theme": "诅咒、温柔危险、被命运吞没",
+    "scene": "马戏团散场后",
+    "unlock": {
+      "emotionMin": 70,
+      "extroversionMax": 35,
+      "moralityMax": 65
+    }
+  },
+  {
+    "id": "grindelwald",
+    "name": "盖勒特·格林德沃",
+    "hidden": true,
+    "traits": {
+      "bravery": 86,
+      "freedom": 90,
+      "passion": 42,
+      "protection": 14,
+      "extroversion": 76,
+      "morality": 12,
+      "emotion": 28,
+      "attachment": 26
+    },
+    "theme": "理想、野心、危险吸引",
+    "scene": "巴黎高塔",
+    "unlock": {
+      "freedomMin": 75,
+      "protectionMax": 35,
+      "moralityMax": 30,
+      "emotionMax": 45
+    }
+  },
+  {
+    "id": "dumbledore",
+    "name": "阿不思·邓布利多",
+    "hidden": false,
+    "traits": {
+      "bravery": 78,
+      "freedom": 62,
+      "passion": 24,
+      "protection": 78,
+      "extroversion": 42,
+      "morality": 76,
+      "emotion": 26,
+      "attachment": 24
+    },
+    "theme": "智慧、悔恨、复杂的光明",
+    "scene": "霍格沃茨校长室",
+    "unlock": {}
+  },
+  {
+    "id": "tom_riddle",
+    "name": "汤姆·里德尔",
+    "hidden": true,
+    "traits": {
+      "bravery": 64,
+      "freedom": 62,
+      "passion": 18,
+      "protection": 8,
+      "extroversion": 58,
+      "morality": 8,
+      "emotion": 10,
+      "attachment": 38
+    },
+    "theme": "危险、控制、被理解的欲望",
+    "scene": "禁书区雨夜",
+    "unlock": {
+      "moralityMax": 25,
+      "protectionMax": 25,
+      "emotionMax": 35
+    }
+  },
+  {
+    "id": "voldemort",
+    "name": "伏地魔",
+    "hidden": true,
+    "traits": {
+      "bravery": 72,
+      "freedom": 42,
+      "passion": 6,
+      "protection": 0,
+      "extroversion": 36,
+      "morality": 0,
+      "emotion": 0,
+      "attachment": 4
+    },
+    "theme": "极端权力、非正常隐藏结局",
+    "scene": "废弃庄园大厅",
+    "unlock": {
+      "moralityMax": 12,
+      "protectionMax": 15,
+      "emotionMax": 15,
+      "attachmentMax": 15
+    }
+  },
+  {
+    "id": "bellatrix",
+    "name": "贝拉特里克斯·莱斯特兰奇",
+    "hidden": true,
+    "traits": {
+      "bravery": 88,
+      "freedom": 48,
+      "passion": 98,
+      "protection": 6,
+      "extroversion": 82,
+      "morality": 4,
+      "emotion": 76,
+      "attachment": 96
+    },
+    "theme": "疯狂、宣告、烈火般的忠诚",
+    "scene": "黑玫瑰庄园",
+    "unlock": {
+      "passionMin": 80,
+      "moralityMax": 25,
+      "attachmentMin": 75
+    }
+  },
+  {
+    "id": "lucius",
+    "name": "卢修斯·马尔福",
+    "hidden": false,
+    "traits": {
+      "bravery": 42,
+      "freedom": 18,
+      "passion": 18,
+      "protection": 20,
+      "extroversion": 62,
+      "morality": 22,
+      "emotion": 12,
+      "attachment": 52
+    },
+    "theme": "优雅、权力、华丽庄园里的烛火",
+    "scene": "马尔福庄园会客厅",
+    "unlock": {}
+  },
+  {
+    "id": "narcissa",
+    "name": "纳西莎·马尔福",
+    "hidden": false,
+    "traits": {
+      "bravery": 56,
+      "freedom": 22,
+      "passion": 34,
+      "protection": 92,
+      "extroversion": 38,
+      "morality": 46,
+      "emotion": 54,
+      "attachment": 86
+    },
+    "theme": "家族、守护、冷静外壳下的深情",
+    "scene": "马尔福庄园温室",
+    "unlock": {}
+  },
+  {
+    "id": "barty_crouch_jr",
+    "name": "小巴蒂·克劳奇",
+    "hidden": true,
+    "traits": {
+      "bravery": 66,
+      "freedom": 34,
+      "passion": 62,
+      "protection": 4,
+      "extroversion": 22,
+      "morality": 6,
+      "emotion": 24,
+      "attachment": 92
+    },
+    "theme": "极端忠诚、伪装、扭曲执念",
+    "scene": "昏暗办公室",
+    "unlock": {
+      "moralityMax": 20,
+      "attachmentMin": 80,
+      "extroversionMax": 40
+    }
+  },
+  {
+    "id": "umbridge",
+    "name": "多洛雷斯·乌姆里奇",
+    "hidden": true,
+    "traits": {
+      "bravery": 12,
+      "freedom": 0,
+      "passion": 10,
+      "protection": 8,
+      "extroversion": 44,
+      "morality": 18,
+      "emotion": 8,
+      "attachment": 70
+    },
+    "theme": "粉色办公室、控制与讽刺隐藏结局",
+    "scene": "粉色办公室",
+    "unlock": {
+      "freedomMax": 15,
+      "moralityMax": 35,
+      "braveryMax": 30
+    }
+  }
+];
+
+function resetTraits(){
+  playerTraits = { bravery:50, freedom:50, passion:50, protection:50, extroversion:50, morality:50, emotion:50, attachment:50 };
+}
+function selectMode(mode){
+  selectedMode = mode;
+  document.querySelectorAll('.modeBtn').forEach(b=>b.style.outline='none');
+  event.currentTarget.style.outline = '3px solid rgba(139,101,216,.22)';
+}
+function beginSelected(){
+  playerName = document.getElementById("nameInput").value.trim() || "你";
+  startTest(selectedMode);
+}
+function switchScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+function startTest(mode){
+  resetTraits(); history = []; currentQuestionIndex = 0;
+  selectedQuestionIds = Array.from({length:testModes[mode].total}, (_,i)=>`q${i+1}`);
+  switchScreen('questionScreen'); showQuestion();
+}
+function showQuestion(){
+  const qid = selectedQuestionIds[currentQuestionIndex];
+  const q = questions[qid];
+  document.getElementById("greeting").textContent = playerName + " 的测试";
+  document.getElementById("progressText").textContent = `${currentQuestionIndex+1} / ${selectedQuestionIds.length}`;
+  document.getElementById("questionText").textContent = q.text;
+  ["A","B","C","D"].forEach(k => document.getElementById("option"+k).textContent = q.options[k].text);
+  renderDots();
+}
+function renderDots(){
+  const box = document.getElementById("progressDots"); box.innerHTML = "";
+  const total = selectedQuestionIds.length; const dots = Math.min(total, 18);
+  const ratio = (currentQuestionIndex+1)/total;
+  for(let i=0;i<dots;i++){
+    const d=document.createElement("div"); d.className = "dot" + (i/dots < ratio ? " done":""); box.appendChild(d);
+  }
+}
+function chooseOption(key){
+  const qid = selectedQuestionIds[currentQuestionIndex];
+  const eff = questions[qid].options[key].effects || {};
+  history.push({qid,key,effects:eff});
+  applyEffects(eff);
+  clampTraits();
+  currentQuestionIndex++;
+  if(currentQuestionIndex >= selectedQuestionIds.length) showResult(); else showQuestion();
+}
+function previousQuestion(){
+  if(currentQuestionIndex===0) return showToast("已经是第一题啦。");
+  const last = history.pop(); if(last) applyEffects(last.effects, -1);
+  clampTraits(); currentQuestionIndex--; showQuestion();
+}
+function applyEffects(effects, factor=1){
+  for(const k in effects) if(playerTraits[k] !== undefined) playerTraits[k] += effects[k]*factor;
+}
+function clampTraits(){
+  DIMENSIONS.forEach(k => playerTraits[k] = Math.max(0, Math.min(100, Math.round(playerTraits[k]))));
+}
+function isUnlocked(c){
+  if(!c.hidden) return true; const u=c.unlock||{};
+  const checks = [
+    ["freedomMin","freedom",">="],["freedomMax","freedom","<="],["passionMin","passion",">="],["passionMax","passion","<="],
+    ["extroversionMin","extroversion",">="],["extroversionMax","extroversion","<="],["moralityMin","morality",">="],["moralityMax","morality","<="],
+    ["protectionMin","protection",">="],["protectionMax","protection","<="],["emotionMin","emotion",">="],["emotionMax","emotion","<="],
+    ["attachmentMin","attachment",">="],["attachmentMax","attachment","<="],["braveryMin","bravery",">="],["braveryMax","bravery","<="]
+  ];
+  return checks.every(([rule,key,op]) => u[rule]===undefined || (op===">=" ? playerTraits[key]>=u[rule] : playerTraits[key]<=u[rule]));
+}
+function matchScore(c){
+  let diff=0; DIMENSIONS.forEach(k=> diff += Math.abs(playerTraits[k]-c.traits[k]));
+  return Math.round((1 - diff/(DIMENSIONS.length*100))*100);
+}
+function getBestMatch(){
+  const pool = characters.filter(isUnlocked);
+  return pool.map(c=>({...c, score:matchScore(c)})).sort((a,b)=>b.score-a.score)[0];
+}
+function portraitEmoji(name){
+  const map = [
+    ["韦斯莱","🧡"],["马尔福","🐍"],["斯内普","🧪"],["卢娜","🌙"],["纽特","🧳"],["格林德沃","⚡"],["伏地魔","☠️"],["贝拉特里克斯","🖤"],["乌姆里奇","🎀"],["纳吉尼","🐍"],["邓布利多","🦅"]
+  ];
+  const f = map.find(([k])=>name.includes(k)); return f?f[1]:"🪄";
+}
+function makeAnalysis(c){
+  return `${playerName}，你在魔法世界里最鲜明的倾向，是「${c.theme}」。你不会只被表面的身份、学院、名声或立场吸引，真正让你停下脚步的，是一个人在选择面前显露出的底色。你身上有一些矛盾：既渴望被理解，也希望保留自己的判断；既会被危险和未知吸引，也不会轻易放弃心里的界限。正因为如此，${c.name}会成为与你高度契合的人。
+
+你们之间的关系不会只是简单的甜蜜。它更像一份魔法契约，需要信任、试探和反复确认。${c.name}身上的关键词是${c.theme}，而你恰好能够读懂这种气质背后的孤独、锋芒或温柔。你不会把对方当成需要被改造的对象，也不会把自己交给一段完全失控的关系。你会靠近，但也会观察；你会心动，但仍然保留清醒。
+
+这段匹配最重要的地方，是你们都能在彼此身上看见平时不轻易展示的一面。${c.name}会被你的选择方式吸引：你不是单纯追逐光明，也不是毫无底线地奔向黑暗；你更像是在混乱的魔法世界里寻找一个真正能与你并肩的人。你们的爱可能温柔，可能危险，可能慢热，也可能像烟火一样突然照亮夜空。但无论是哪一种，它都会让你意识到：所谓命定伴侣，并不是完美的人，而是那个能让你在异世界里仍然成为自己的人。`;
+}
+function makeStory(c){
+  return `你们的故事开始在${c.scene}。那天的空气里有一点潮湿的花香，远处传来猫头鹰掠过屋檐的声音，像一封还未拆开的信。你本来只是经过，却在转身的瞬间看见了${c.name}。那一刻，周围的喧闹像被施了静音咒，只剩下你心里轻轻一响。
+
+${c.name}没有立刻靠近你。也许是出于谨慎，也许是习惯把真正的情绪藏起来。你们之间先是短暂的沉默，随后是一句并不算浪漫的话。可正是这句普通的话，让你意识到，对方并不像传闻里那样简单。你没有急着解释自己，也没有故意表现得与众不同。你只是站在那里，用一种很平静的方式回应了对方的注视。
+
+后来，夜色慢慢落下来。窗外的灯一盏一盏亮起，魔法世界的影子在墙上摇晃。你们并肩走过长廊、街角或城堡边缘，谈起那些白天不适合说出口的事。${c.name}偶尔会看向你，像是在确认你是否真的愿意留下。你没有许下夸张的誓言，只是在对方停顿的时候没有离开。
+
+故事真正开始的瞬间，并不是拥抱或告白，而是某个很小的动作：一杯热茶，一件披到肩上的外套，一句“我知道”，或者一个没有松开的手。那一刻你明白，命运并没有给你一条安全的路，却给了你一个愿意与你同行的人。无论未来是战争、远方、秘密还是温柔的日常，你都会记得，在这个世界里，${c.name}第一次认真看向你的样子。`;
+}
+function showResult(){
+  clampTraits();
+  const c = getBestMatch();
+  switchScreen('resultScreen');
+  document.getElementById("portrait").textContent = portraitEmoji(c.name);
+  document.getElementById("resultName").textContent = c.name;
+  document.getElementById("resultQuote").textContent = `匹配度 ${c.score}%｜${c.theme}`;
+  document.getElementById("analysisText").textContent = makeAnalysis(c);
+  document.getElementById("storyText").textContent = makeStory(c);
+  renderTraitBars();
+}
+function renderTraitBars(){
+  const box = document.getElementById("traitBars"); box.innerHTML="";
+  DIMENSIONS.forEach((k,i)=>{
+    const left=playerTraits[k], right=100-left, labs=traitLabels[k];
+    const row=document.createElement("div"); row.className="traitRow";
+    row.innerHTML = `<div class="traitTitle"><span>${labs[0]} ${left}%</span><span>${labs[1]} ${right}%</span></div><div class="bar"><div class="fill" style="width:${left}%; filter:hue-rotate(${i*22}deg)">${left}%</div></div>`;
+    box.appendChild(row);
+  });
+}
+function restartTest(){ switchScreen('startScreen'); }
+function backToStart(){ if(confirm("要返回初始界面吗？当前进度会清空。")) restartTest(); }
+function shareResult(){
+  const text = `${playerName} 的魔法世界伴侣匹配结果：${document.getElementById("resultName").textContent}`;
+  if(navigator.clipboard) navigator.clipboard.writeText(text).then(()=>showToast("结果已复制，可以去分享啦。"));
+  else showToast(text);
+}
+function showToast(msg){
+  const t=document.getElementById("toast"); t.textContent=msg; t.classList.add("show");
+  setTimeout(()=>t.classList.remove("show"),1800);
+}
+</script>
+</body>
+</html>
